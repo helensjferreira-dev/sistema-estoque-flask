@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Página Principal</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@700&family=Parisienne&family=Cinzel+Decorative:wght@700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    {% include 'menu_app.html' %}
+
+    <!-- mensagens -->
+    <div id="alerta"></div>
+
+    <header>
+
+      {% if session.get('app_logon_realizado') %}
+      <h1 class="estetica-playfair">Seja bem-vindo(a)!</h1>
+      {% endif %}
+    </header>
+
+    <script>
+      // Cria alerta se não existir
+      let alerta = document.getElementById("alerta");
+      if (!alerta) {
+        alerta = document.createElement("div");
+        alerta.id = "alerta";
+        alerta.style.cssText =
+          "display:none; background:#ffeb3b; padding:10px; margin-bottom:20px; border-radius:5px;";
+        document.body.insertBefore(alerta, document.body.firstChild);
+      }
+
+      function exibirMensagem(mensagem, sucesso = false) {
+        alerta.textContent = mensagem;
+        alerta.style.display = "block";
+        alerta.style.backgroundColor = sucesso ? "#d4edda" : "#f8d7da";
+        alerta.style.color = sucesso ? "#155724" : "#721c24";
+
+        setTimeout(() => {
+          alerta.style.display = "none";
+        }, 4000);
+      }
+    </script>
+  </body>
+</html>

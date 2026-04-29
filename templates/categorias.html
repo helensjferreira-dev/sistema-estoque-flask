@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Categoria - Gerenciar</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@700&family=Parisienne&family=Cinzel+Decorative:wght@700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    {% include 'menu_app.html' %}
+
+    <h1>Categoria - Gerenciar</h1>
+    <section class="form-section">
+      <form id="formCategoria">
+        <input type="hidden" id="idcategoria" />
+
+        <label for="nome">Nome:</label>
+        <input id="nome" type="text" placeholder="Nome" />
+        <div class="form-bottom">
+          <button type="submit">Salvar</button>
+          <button type="reset">Cancelar</button>
+        </div>
+        <div id="alerta" style="display: none"></div>
+      </form>
+    </section>
+
+    <section class="table-section">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Categoria</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody id="listaCategoria"></tbody>
+      </table>
+    </section>
+
+    <!-- Modal de confirmação -->
+    <div
+      id="modal-confirmacao-categoria"
+      class="modal-overlay"
+      style="display: none"
+    >
+      <div class="modal-box">
+        <p id="modal-mensagem-categoria">
+          Tem certeza que deseja excluir esta categoria?
+        </p>
+        <div class="modal-botoes">
+          <button id="btn-confirmar-categoria" class="btn-excluir">
+            Confirmar
+          </button>
+          <button id="btn-cancelar-categoria" class="btn-editar">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API_URL = "/categoria/";
+      const form = document.getElementById("formCategoria");
+      const lista = document.getElementById("listaCategoria");
+      const nomeInput = document.getElementById("nome");
+      const idInput = document.getElementById("idcategoria");
+      let idCategoriaParaExcluir = null;
+
+      // Exibe mensagem de alerta com cores
+      function exibirMensagem(mensagem, sucesso = false) {
+        const alerta = document.getElementById("alerta");
+        alerta.innerText = mensagem;
+        alerta.style.display = "block";
+        alerta.style.backgroundColor = sucesso ? "#d4edda" : "#f8d7da"; // verde ou vermelho
+        alerta.style.color = sucesso ? "#155724" : "#721c24";
+        alerta.style.border = sucesso
+          ? "1px solid #c3e6cb"
+          : "1px solid #f5c6cb";
+
+        setTimeout(() => {
+          alerta.style.display = "none";
+        }, 4000);
+      }
+
+      // Carrega as categorias na tabela
+      async function CarregarCategorias() {
+        const resposta = await fetch(API_URL + "categorias");
+        const retorno = await resposta.json();
+        const categorias = retorno.dados;
+
+        lista.innerHTML = "";
+
+        if (categorias) {
+          categorias.forEach((categoria) => {
+            lista.innerHTML += `
+              <tr>
+                <td>${categoria.id}</td>
+                <td>${categoria.nome}</td>
+                <td>
+                  <button class="btn-editar" onclick="editar(${categoria.id})">Editar</button>
+                  <button class="btn-excluir" onclick="mostrarModalCategoria(${categoria.id})">Excluir</button>
+                </td>
+              </tr>
+            `;
+          });
+        } else {
+          exibirMensagem(retorno.mensagem || "Nenhuma categoria encontrada.");
+        }
+      }
+
+      // Validação e envio do form
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+
+        const id = idInput.value;
+        const nome = nomeInput.value.trim();
+
+        if (!nome) {
+          exibirMensagem("O campo 'Nome' é obrigatório.");
+          return;
+        }
+
+
+        const metodo = id ? "PUT" : "POST";
+        const endpoint = id ? "categoria" : "categorias";
+
+        const resposta = await fetch(API_URL + endpoint, {
+          method: metodo,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id, nome }),
+        });
+
+        const retorno = await resposta.json();
+
+        // usa tanto Mensagem quanto mensagem
+        const msg = retorno.Mensagem || retorno.mensagem || "Erro ao salvar.";
+        exibirMensagem(msg, retorno.Resultado);
+
+        // limpa os campos
+        nomeInput.value = "";
+        idInput.value = "";
+
+        CarregarCategorias();
+      };
+
+      // Edita categoria
+      async function editar(id) {
+        const resposta = await fetch(API_URL + "categoria/" + id);
+        const retorno = await resposta.json();
+        const categoria = retorno.dados;
+
+        if (categoria) {
+          idInput.value = categoria.id;
+          nomeInput.value = categoria.nome;
+          nomeInput.focus();
+          // rola a página até o topo
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      }
+
+      // Modal de confirmação
+      function mostrarModalCategoria(id) {
+        idCategoriaParaExcluir = id;
+        document.getElementById("modal-confirmacao-categoria").style.display =
+          "flex";
+      }
+
+      document.getElementById("btn-confirmar-categoria").onclick = async () => {
+        if (idCategoriaParaExcluir !== null) {
+          const resposta = await fetch(
+            API_URL + "categoria/" + idCategoriaParaExcluir,
+            {
+              method: "DELETE",
+            }
+          );
+          const retorno = await resposta.json();
+          const msg =
+            retorno.Mensagem || retorno.mensagem || "Erro ao excluir.";
+          exibirMensagem(msg, retorno.Resultado);
+          CarregarCategorias();
+          idCategoriaParaExcluir = null;
+        }
+        document.getElementById("modal-confirmacao-categoria").style.display =
+          "none";
+      };
+
+      document.getElementById("btn-cancelar-categoria").onclick = () => {
+        idCategoriaParaExcluir = null;
+        document.getElementById("modal-confirmacao-categoria").style.display =
+          "none";
+      };
+
+      // Reset do form
+      form.onreset = async (e) => {
+        e.preventDefault();
+        idInput.value = "";
+        nomeInput.value = "";
+        CarregarCategorias();
+      };
+
+      // Inicializando
+      CarregarCategorias();
+    </script>
+  </body>
+</html>

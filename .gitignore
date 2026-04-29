@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtualenv
+venv/
+env/
+.venv/
+
+# Flask session e cache
+flask_session/
+instance/
+*.db
+
+# Arquivos de configuração locais
+*.env
+.env.*
+*.ini
+*.cfg
+
+# Arquivos de sistema
+desktop.ini
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Conexão com o banco (arquivo sensível)
+conn.py
+
+# Testes temporários
+.coverage
+.pytest_cache/

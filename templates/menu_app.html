@@ -1,0 +1,184 @@
+<!-- Menu fixo no topo -->
+<header class="menu-topo">
+  <div class="menu-container">
+    <div class="menu-logo">
+      <a href="{{ url_for('inicial') }}" class="estetica-playfair">Estética</a>
+
+    </div>
+
+        <!-- Botão mobile -->
+    <button class="menu-toggle">☰</button>
+        <!-- Links -->
+    <nav class="menu-links">
+      <ul>
+        {% if session.get('app_logon_realizado') %}
+        <li>
+          <a href="{{ url_for('movimentacao_routes.pagina_movimentacoes') }}"
+            >Movimentações</a
+          >
+        </li>
+        <li>
+          <a href="{{ url_for('categoria_routes.pagina_categoria') }}"
+            >Categorias</a
+          >
+        </li>
+        <li>
+          <a href="{{ url_for('produto_routes.pagina_produto') }}">Produtos</a>
+        </li>
+        <li><a href="{{ url_for('lote_routes.pagina_lote') }}">Lotes</a></li>
+        <li>
+          <a href="{{ url_for('fornecedor_routes.pagina_fornecedor') }}"
+            >Fornecedores</a
+          >
+        </li>
+        <li>
+          <a href="{{ url_for('usuario_routes.pagina_usuario') }}">Usuários</a>
+        </li>
+
+        <!-- Submenu Relatórios -->
+        <li class="dropdown">
+          <a href="#">Relatórios ▾</a>
+          <ul class="dropdown-content">
+            <li>
+              <a
+                href="{{ url_for('relatorio_routes.pagina_relatorio_movimentacoes') }}"
+              >
+                🔄 Movimentações
+              </a>
+            </li>
+
+            <li>
+              <a href="{{ url_for('relatorio_routes.estoque') }}">📦 Estoque</a>
+            </li>
+            <li>
+              <a href="{{ url_for('relatorio_routes.validade') }}"
+                >⏳ Validade</a
+              >
+            </li>
+          </ul>
+        </li>
+
+        <!-- Login/Logout -->
+
+        <li class="dropdown usuario-dropdown">
+          <a href="#" class="dropbtn"
+            >👤 Bem-vindo, {{ session.get('usuario') }}</a
+          >
+
+          <ul class="dropdown-content">
+            <li><a href="#" id="logoutLink">Logout</a></li>
+          </ul>
+        </li>
+        {% else %}
+        <!-- Apenas área restrita quando não logado -->
+        <li>
+          <a
+            href="{{ url_for('usuario_routes.rota_usuario_login') }}"
+            class="area-restrita"
+            >Área restrita</a
+          >
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<!-- Modal de Logout (confirmação) -->
+<div id="modal-logout" class="modal-overlay" style="display: none">
+  <div class="modal-box">
+    <p id="modal-mensagem-logout">Deseja realmente encerrar a sessão?</p>
+    <div class="modal-botoes">
+      <button id="btn-confirmar-logout" class="btn-excluir">Sim, sair</button>
+      <button id="btn-cancelar-logout" class="btn-editar">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Feedback Logout -->
+<div id="modal-feedback-logout" class="modal-overlay" style="display: none">
+  <div class="modal-box">
+    <p id="mensagem-feedback-logout"></p>
+    <div class="modal-botoes">
+      <button id="btn-ok-logout" class="btn-editar">OK</button>
+    </div>
+  </div>
+</div>
+
+<script>
+    const toggle = document.querySelector(".menu-toggle");
+  const menu = document.querySelector(".menu-links");
+
+  toggle.addEventListener("click", () => {
+    menu.classList.toggle("ativo");
+  });
+  const logoutLink = document.getElementById("logoutLink");
+
+  if (logoutLink) {
+    logoutLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      document.getElementById("modal-logout").style.display = "flex";
+    });
+  }
+
+  document.getElementById("btn-confirmar-logout").onclick = async () => {
+    try {
+      const resposta = await fetch("/usuario/logoff", { method: "GET" });
+      let mensagem = "Sessão finalizada com sucesso.";
+      if (resposta.ok) {
+        const retorno = await resposta.json();
+        mensagem = retorno.Mensagem || mensagem;
+        // Exibe modal de feedback
+        document.getElementById("mensagem-feedback-logout").innerText =
+          mensagem;
+        document.getElementById("modal-feedback-logout").style.display = "flex";
+        document.getElementById("btn-ok-logout").onclick = () => {
+          document.getElementById("modal-feedback-logout").style.display =
+            "none";
+          window.location.href = "/";
+        };
+      } else {
+        let mensagemErro = "Erro ao sair. Status: " + resposta.status;
+        try {
+          const retorno = await resposta.json();
+          mensagemErro = retorno.Mensagem || mensagemErro;
+        } catch {}
+        document.getElementById("mensagem-feedback-logout").innerText =
+          mensagemErro;
+        document.getElementById("modal-feedback-logout").style.display = "flex";
+        document.getElementById("btn-ok-logout").onclick = () => {
+          document.getElementById("modal-feedback-logout").style.display =
+            "none";
+        };
+      }
+    } catch (e) {
+      document.getElementById("mensagem-feedback-logout").innerText =
+        "Erro ao conectar com o servidor para deslogar.";
+      document.getElementById("modal-feedback-logout").style.display = "flex";
+      document.getElementById("btn-ok-logout").onclick = () => {
+        document.getElementById("modal-feedback-logout").style.display = "none";
+      };
+      console.error("Erro no logoff:", e);
+    }
+    document.getElementById("modal-logout").style.display = "none";
+  };
+
+  document.getElementById("btn-cancelar-logout").onclick = () => {
+    document.getElementById("modal-logout").style.display = "none";
+  };
+
+  document.querySelectorAll(".dropdown > a").forEach((botao) => {
+    botao.addEventListener("click", function (e) {
+      e.preventDefault();
+      const item = this.parentElement;
+      item.classList.toggle("ativo");
+
+      // Fecha outros dropdowns abertos
+      document.querySelectorAll(".dropdown").forEach((outro) => {
+        if (outro !== item) {
+          outro.classList.remove("ativo");
+        }
+      });
+    });
+  });
+</script>
