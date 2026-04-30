@@ -977,3 +977,566 @@ button:active {
     max-width: 100%;
   }
 }
+/* =========================
+   FORMS PADRÃO
+   ========================= */
+
+.form-section {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto 24px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+label {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+/* Inputs modernos */
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  font-size: 14px;
+  transition:
+    border 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-light);
+}
+
+/* Agrupamento de campos lado a lado */
+.form-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.form-row > * {
+  flex: 1;
+  min-width: 150px;
+}
+
+/* =========================
+   BOTÕES PADRÃO
+   ========================= */
+
+button {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+}
+
+button[type="submit"] {
+  background: var(--color-primary);
+  color: white;
+}
+
+button[type="submit"]:hover {
+  background: var(--color-primary-dark);
+}
+
+button[type="reset"] {
+  background: #f87171;
+  color: white;
+}
+
+button[type="reset"]:hover {
+  background: #dc2626;
+}
+
+/* =========================
+   TABELAS MODERNAS
+   ========================= */
+
+.table-section {
+  width: 100%;
+  margin-top: 24px;
+  overflow-x: auto;
+}
+
+.table-section table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.table-section th {
+  background: var(--color-primary);
+  color: white;
+  font-weight: 600;
+  padding: 12px;
+  text-align: left;
+}
+
+.table-section td {
+  padding: 10px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.table-section tr:hover {
+  background: #f9fafb;
+}
+
+/* Status */
+td.ok {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+td.alerta {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+/* =========================
+   MOBILE AJUSTES
+   ========================= */
+
+@media (max-width: 768px) {
+  .form-section {
+    padding: 16px;
+  }
+
+  .form-row {
+    flex-direction: column;
+  }
+
+  button {
+    width: 100%;
+  }
+}
+
+/* =========================
+   FORMS PADRÃO
+   ========================= */
+
+.form-section {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto 24px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+label {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+/* Inputs modernos */
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  font-size: 14px;
+  transition:
+    border 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-light);
+}
+
+/* Agrupamento de campos lado a lado */
+.form-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.form-row > * {
+  flex: 1;
+  min-width: 150px;
+}
+
+/* =========================
+   BOTÕES PADRÃO
+   ========================= */
+
+button {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+}
+
+button[type="submit"] {
+  background: var(--color-primary);
+  color: white;
+}
+
+button[type="submit"]:hover {
+  background: var(--color-primary-dark);
+}
+
+button[type="reset"] {
+  background: #f87171;
+  color: white;
+}
+
+button[type="reset"]:hover {
+  background: #dc2626;
+}
+
+/* =========================
+   TABELAS MODERNAS
+   ========================= */
+
+.table-section {
+  width: 100%;
+  margin-top: 24px;
+  overflow-x: auto;
+}
+
+.table-section table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.table-section th {
+  background: var(--color-primary);
+  color: white;
+  font-weight: 600;
+  padding: 12px;
+  text-align: left;
+}
+
+.table-section td {
+  padding: 10px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.table-section tr:hover {
+  background: #f9fafb;
+}
+
+/* Status */
+td.ok {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+td.alerta {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+/* =========================
+   MOBILE AJUSTES
+   ========================= */
+
+@media (max-width: 768px) {
+  .form-section {
+    padding: 16px;
+  }
+
+  .form-row {
+    flex-direction: column;
+  }
+
+  button {
+    width: 100%;
+  }
+}
+
+/* =========================
+   FIXES - CHECKBOX E BOTÕES
+   ========================= */
+
+/* Checkbox não deve seguir regra de largura dos inputs */
+input[type="checkbox"] {
+  width: auto;
+  max-width: none;
+  transform: scale(1.1);
+  accent-color: var(--color-primary);
+}
+
+/* Mantém checkbox alinhado com o label quando estiver no formulário */
+form input[type="checkbox"] {
+  align-self: flex-start;
+}
+
+/* Botões em linha quando estiverem no formulário */
+form button {
+  width: auto;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Container simples para botões quando eles estão soltos no form */
+form button + button {
+  margin-left: 12px;
+}
+
+/* Mobile: botões ocupam largura total, mas com espaçamento correto */
+@media (max-width: 768px) {
+  form button {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  form button + button {
+    margin-left: 0;
+    margin-top: 10px;
+  }
+
+  input[type="checkbox"] {
+    width: auto;
+  }
+}
+/* =========================
+   FIX MOBILE - BOTÕES
+   ========================= */
+
+@media (max-width: 768px) {
+  form button,
+  form button[type="submit"],
+  form button[type="reset"] {
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    align-self: stretch;
+  }
+
+  form button + button,
+  form button[type="reset"] {
+    margin-top: 10px;
+  }
+
+  .modal-botoes button {
+    width: auto;
+  }
+}
+/* =========================
+   DASHBOARD
+   ========================= */
+
+.dashboard-page {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.dashboard-header {
+  margin-bottom: 28px;
+}
+
+.dashboard-label {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: var(--color-muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.dashboard-header h1 {
+  margin-bottom: 8px;
+  font-size: 34px;
+  color: var(--color-primary-dark);
+}
+
+.dashboard-header p {
+  color: var(--color-muted);
+  font-size: 16px;
+  margin: 0;
+}
+
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.dashboard-card {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  background: var(--color-surface);
+  padding: 22px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
+  color: var(--color-text);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-light);
+  font-size: 22px;
+}
+
+.dashboard-card h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  color: var(--color-primary-dark);
+}
+
+.dashboard-card p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+@media (max-width: 900px) {
+  .dashboard-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-page {
+    margin-top: 10px;
+  }
+
+  .dashboard-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-header h1 {
+    font-size: 28px;
+  }
+}
+/* =========================
+   FILTROS / SEARCH PANELS
+   ========================= */
+
+.filtros-mov,
+.filtros-lotes,
+.filtros-section,
+.filtros {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+  margin: 24px 0;
+}
+
+.filtros-mov h2,
+.filtros-lotes h2,
+.filtros-section h2,
+.filtros h2 {
+  margin: 0 0 16px;
+  font-size: 20px;
+  color: var(--color-primary-dark);
+}
+
+.filtros-container,
+.filtros-linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: flex-end;
+}
+
+.filtros-container label,
+.filtros-linha label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.filtros-container input,
+.filtros-container select,
+.filtros-linha input,
+.filtros-linha select {
+  min-width: 180px;
+  width: auto;
+}
+
+@media (max-width: 768px) {
+  .filtros-mov,
+  .filtros-lotes,
+  .filtros-section,
+  .filtros {
+    padding: 16px;
+  }
+
+  .filtros-container,
+  .filtros-linha {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filtros-container input,
+  .filtros-container select,
+  .filtros-linha input,
+  .filtros-linha select {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+.resumo-lotes {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 18px 20px;
+}
