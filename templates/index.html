@@ -1,52 +1,103 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Página Principal</title>
+    <title>Dashboard | StockFlow</title>
+
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='style.css') }}"
     />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@700&family=Parisienne&family=Cinzel+Decorative:wght@700&display=swap"
-      rel="stylesheet"
-    />
   </head>
+
   <body>
     {% include 'menu_app.html' %}
 
-    <!-- mensagens -->
     <div id="alerta"></div>
 
-    <header>
+    {% if session.get('app_logon_realizado') %}
+    <main class="dashboard-page">
+      <section class="dashboard-header">
+        <div>
+          <span class="dashboard-label">Visão geral</span>
+          <h1>Dashboard</h1>
+          <p>
+            Acompanhe movimentações, estoque, lotes e relatórios do sistema.
+          </p>
+        </div>
+      </section>
 
-      {% if session.get('app_logon_realizado') %}
-      <h1 class="estetica-playfair">Seja bem-vindo(a)!</h1>
-      {% endif %}
-    </header>
+      <section class="dashboard-cards">
+        <a
+          href="{{ url_for('produto_routes.pagina_produto') }}"
+          class="dashboard-card"
+        >
+          <span class="card-icon">📦</span>
+          <div>
+            <h2>Produtos</h2>
+            <p>Gerencie produtos e estoque mínimo.</p>
+          </div>
+        </a>
 
-    <script>
-      // Cria alerta se não existir
-      let alerta = document.getElementById("alerta");
-      if (!alerta) {
-        alerta = document.createElement("div");
-        alerta.id = "alerta";
-        alerta.style.cssText =
-          "display:none; background:#ffeb3b; padding:10px; margin-bottom:20px; border-radius:5px;";
-        document.body.insertBefore(alerta, document.body.firstChild);
-      }
+        <a
+          href="{{ url_for('movimentacao_routes.pagina_movimentacoes') }}"
+          class="dashboard-card"
+        >
+          <span class="card-icon">🔄</span>
+          <div>
+            <h2>Movimentações</h2>
+            <p>Registre entradas e saídas de estoque.</p>
+          </div>
+        </a>
 
-      function exibirMensagem(mensagem, sucesso = false) {
-        alerta.textContent = mensagem;
-        alerta.style.display = "block";
-        alerta.style.backgroundColor = sucesso ? "#d4edda" : "#f8d7da";
-        alerta.style.color = sucesso ? "#155724" : "#721c24";
+        <a
+          href="{{ url_for('lote_routes.pagina_lote') }}"
+          class="dashboard-card"
+        >
+          <span class="card-icon">⏳</span>
+          <div>
+            <h2>Lotes</h2>
+            <p>Controle validade e rastreabilidade.</p>
+          </div>
+        </a>
 
-        setTimeout(() => {
-          alerta.style.display = "none";
-        }, 4000);
-      }
-    </script>
+        <a
+          href="{{ url_for('relatorio_routes.estoque') }}"
+          class="dashboard-card"
+        >
+          <span class="card-icon">📈</span>
+          <div>
+            <h2>Relatório de Estoque</h2>
+            <p>Visualize produtos em falta, baixos ou OK.</p>
+          </div>
+        </a>
+
+        <a
+          href="{{ url_for('relatorio_routes.validade') }}"
+          class="dashboard-card"
+        >
+          <span class="card-icon">⏰</span>
+          <div>
+            <h2>Relatório de Validade</h2>
+            <p>Acompanhe lotes vencidos e próximos do vencimento.</p>
+          </div>
+        </a>
+
+        <a
+          href="{{ url_for('relatorio_routes.pagina_relatorio_movimentacoes') }}"
+          class="dashboard-card"
+        >
+          <span class="card-icon">📊</span>
+          <div>
+            <h2>Relatório de Movimentações</h2>
+            <p>Filtre movimentações e exporte relatórios.</p>
+          </div>
+        </a>
+      </section>
+    </main>
+    {% endif %}
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
   </body>
 </html>

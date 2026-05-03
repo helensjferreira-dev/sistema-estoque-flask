@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <title>Fornecedor - Gerenciar</title>
@@ -62,183 +62,21 @@
           Tem certeza que deseja excluir este fornecedor?
         </p>
         <div class="modal-botoes">
-          <button id="btn-confirmar-fornecedor" class="btn-excluir">
+          <button
+            type="button"
+            id="btn-confirmar-fornecedor"
+            class="btn-excluir"
+          >
             Confirmar
           </button>
-          <button id="btn-cancelar-fornecedor" class="btn-editar">
+          <button type="button" id="btn-cancelar-fornecedor" class="btn-editar">
             Cancelar
           </button>
         </div>
       </div>
     </div>
 
-    <script>
-      const API_URL = "/fornecedor/";
-      const form = document.getElementById("formFornecedor");
-      const nomeInput = document.getElementById("nome");
-      const emailInput = document.getElementById("email");
-      const telefoneInput = document.getElementById("telefone");
-      const tabelaBody = document.getElementById("listaFornecedor");
-      let idEditando = null;
-      let idFornecedorParaExcluir = null;
-
-      // Mensagens com cores de sucesso/erro
-      function exibirMensagem(mensagem, sucesso = false) {
-        const alerta = document.getElementById("alerta");
-        alerta.innerText = mensagem;
-        alerta.style.display = "block";
-        alerta.style.backgroundColor = sucesso ? "#d4edda" : "#f8d7da"; // verde ou vermelho
-        alerta.style.color = sucesso ? "#155724" : "#721c24";
-        alerta.style.border = sucesso
-          ? "1px solid #c3e6cb"
-          : "1px solid #f5c6cb";
-
-        setTimeout(() => {
-          alerta.style.display = "none";
-        }, 4000);
-      }
-
-      async function carregarFornecedores() {
-        const resposta = await fetch(API_URL + "fornecedores");
-        const retorno = await resposta.json();
-        const fornecedores = retorno.dados;
-
-        tabelaBody.innerHTML = "";
-
-        fornecedores.forEach((fornecedor) => {
-          const linha = document.createElement("tr");
-          linha.innerHTML = `
-            <td>${fornecedor.id}</td>
-            <td>${fornecedor.nome}</td>
-            <td>${fornecedor.email ?? "-"}</td>
-            <td>${fornecedor.telefone ?? "-"}</td>
-            <td>
-              <button class="btn-editar" onclick="editarFornecedor(${fornecedor.id})">Editar</button>
-              <button class="btn-excluir" onclick="mostrarModalFornecedor(${fornecedor.id})">Excluir</button>
-            </td>
-          `;
-          tabelaBody.appendChild(linha);
-        });
-      }
-
-      form.onsubmit = async (e) => {
-        e.preventDefault();
-
-        const nome = nomeInput.value.trim();
-        const emailRaw = emailInput.value.trim();
-        const telefoneRaw = telefoneInput.value.trim();
-
-        if (!nome) {
-          exibirMensagem("O campo 'Nome' é obrigatório.");
-          return;
-        }
-        // se vazio, envia null
-        const email = emailRaw === "" ? null : emailRaw;
-        const telefone = telefoneRaw === "" ? null : telefoneRaw;
-        // Verificação de nome duplicado (apenas no front)
-        const respostaFornecedores = await fetch(API_URL + "fornecedores");
-        const retornoFornecedores = await respostaFornecedores.json();
-        const fornecedoresExistentes = retornoFornecedores.dados || [];
-
-        const nomeJaExiste = fornecedoresExistentes.some(
-          (f) =>
-            f.nome.toLowerCase() === nome.toLowerCase() && f.id !== idEditando
-        );
-
-        if (nomeJaExiste) {
-          exibirMensagem("Já existe um fornecedor com este nome.", false);
-          return; // interrompe o envio
-        }
-
-        const metodo = idEditando ? "PUT" : "POST";
-        const url = idEditando
-          ? API_URL + "fornecedor"
-          : API_URL + "fornecedores";
-
-        const resposta = await fetch(url, {
-          method: metodo,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: idEditando, nome, email, telefone }),
-        });
-
-        const retorno = await resposta.json();
-
-        // Mensagem verde se sucesso
-        exibirMensagem(
-          retorno.Mensagem || "Erro ao salvar.",
-          retorno.Resultado
-        );
-
-        // Limpa os campos
-        nomeInput.value = "";
-        emailInput.value = "";
-        telefoneInput.value = "";
-        idEditando = null;
-
-        carregarFornecedores();
-      };
-
-      async function editarFornecedor(id) {
-        const resposta = await fetch(API_URL + "fornecedor/" + id);
-        const retorno = await resposta.json();
-        const fornecedor = retorno.dados;
-
-        if (fornecedor) {
-          idEditando = fornecedor.id;
-          nomeInput.value = fornecedor.nome;
-          emailInput.value = fornecedor.email;
-          telefoneInput.value = fornecedor.telefone;
-          // foco no primeiro campo editável
-          nomeInput.focus();
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }
-      }
-
-      // Modal de confirmação
-      function mostrarModalFornecedor(id) {
-        idFornecedorParaExcluir = id;
-        document.getElementById("modal-confirmacao-fornecedor").style.display =
-          "flex";
-      }
-
-      document.getElementById("btn-confirmar-fornecedor").onclick =
-        async () => {
-          if (idFornecedorParaExcluir !== null) {
-            const resposta = await fetch(
-              API_URL + "fornecedor/" + idFornecedorParaExcluir,
-              {
-                method: "DELETE",
-              }
-            );
-            const retorno = await resposta.json();
-            exibirMensagem(
-              retorno.Mensagem || "Erro ao excluir.",
-              retorno.Resultado
-            );
-            carregarFornecedores();
-            idFornecedorParaExcluir = null;
-          }
-          document.getElementById(
-            "modal-confirmacao-fornecedor"
-          ).style.display = "none";
-        };
-
-      document.getElementById("btn-cancelar-fornecedor").onclick = () => {
-        idFornecedorParaExcluir = null;
-        document.getElementById("modal-confirmacao-fornecedor").style.display =
-          "none";
-      };
-
-      form.onreset = (e) => {
-        e.preventDefault();
-        idEditando = null;
-        nomeInput.value = "";
-        emailInput.value = "";
-        telefoneInput.value = "";
-        carregarFornecedores();
-      };
-
-      carregarFornecedores();
-    </script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/fornecedores.js') }}"></script>
   </body>
 </html>

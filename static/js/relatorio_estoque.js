@@ -1,0 +1,113 @@
+      async function carregarRelatorio() {
+        const resp = await fetch("/relatorio/estoque/dados");
+        const dados = await resp.json();
+        const produtos = dados.dados || [];
+
+        const tabela = document.getElementById("listaRelatorio");
+
+        let nomes = [];
+        let estoqueAtual = [];
+        let estoqueMinimo = [];
+
+        tabela.innerHTML = "";
+        produtos.forEach((p) => {
+          // Converte para número e normaliza nulos/strings
+          const valorEstoqueAtual = Number(p.estoque_atual ?? 0);
+          const valorEstoqueMinimo = Number(p.estoque_minimo ?? 0);
+          const categoriaNome = p.categoria_nome ?? "-";
+
+          // Calcula status com valores numéricos
+          let statusClass = "ok";
+          let statusTexto = "OK";
+
+          if (valorEstoqueAtual <= 0) {
+            statusClass = "falta";
+            statusTexto = "Em falta";
+          } else if (
+            valorEstoqueMinimo > 0 &&
+            valorEstoqueAtual < valorEstoqueMinimo
+          ) {
+            statusClass = "alerta";
+            statusTexto = "Baixo";
+          }
+
+          tabela.innerHTML += `
+        <tr>
+          <td>${p.produto_id}</td>
+          <td>${p.produto_nome}</td>
+          <td>${categoriaNome}</td>
+          <td>${valorEstoqueMinimo}</td>
+          <td class="${statusClass}">${valorEstoqueAtual}</td>
+          <td>${statusTexto}</td>
+        </tr>
+      `;
+
+          nomes.push(p.produto_nome);
+          estoqueAtual.push(valorEstoqueAtual);
+          estoqueMinimo.push(valorEstoqueMinimo);
+        });
+
+        // Resumo com valores normalizados
+        const normalizados = produtos.map((p) => ({
+          atual: Number(p.estoque_atual ?? 0),
+          minimo: Number(p.estoque_minimo ?? 0),
+        }));
+
+        const totalProdutos = normalizados.length;
+        const emFalta = normalizados.filter((x) => x.atual <= 0).length;
+        const baixos = normalizados.filter(
+          (x) => x.atual > 0 && x.minimo > 0 && x.atual < x.minimo,
+        ).length;
+        const ok = totalProdutos - emFalta - baixos;
+
+        const percFalta =
+          totalProdutos > 0 ? ((emFalta / totalProdutos) * 100).toFixed(1) : 0;
+        const percBaixo =
+          totalProdutos > 0 ? ((baixos / totalProdutos) * 100).toFixed(1) : 0;
+
+        const resumoDiv = document.getElementById("resumo");
+        let resumoClasse = "resumo-verde";
+        if (percFalta >= 20) resumoClasse = "resumo-vermelho";
+        else if (percBaixo >= 20) resumoClasse = "resumo-laranja";
+
+        resumoDiv.className = resumoClasse;
+        resumoDiv.innerHTML = `
+      Total de produtos: ${totalProdutos} <br>
+      Em falta: ${emFalta} (${percFalta}%) <br>
+      Baixo: ${baixos} (${percBaixo}%) <br>
+      OK: ${ok}
+    `;
+
+        // Gráfico
+        const ctx = document.getElementById("graficoEstoque").getContext("2d");
+        new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: nomes,
+            datasets: [
+              {
+                label: "Estoque Atual",
+                data: estoqueAtual,
+                backgroundColor: "#4caf50",
+              },
+              {
+                label: "Estoque Mínimo",
+                data: estoqueMinimo,
+                backgroundColor: "#f44336",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { position: "top" },
+              title: {
+                display: true,
+                text: "Comparativo Estoque Atual x Mínimo",
+              },
+            },
+          },
+        });
+      }
+
+      carregarRelatorio();
