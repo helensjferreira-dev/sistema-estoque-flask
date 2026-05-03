@@ -15,46 +15,6 @@
   </head>
   <body>
     {% include 'menu_app.html' %} {% include 'login_form.html' %}
-    <script>
-      const form = document.getElementById("loginForm");
-      const alerta = document.getElementById("alerta");
-
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-
-        const email = document.getElementById("email").value.trim();
-        const senha = document.getElementById("senha").value.trim();
-
-        try {
-          const resposta = await fetch("/usuario/logon", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, senha }),
-          });
-
-          const retorno = await resposta.json();
-          const sucesso = retorno.Resultado === true;
-
-
-          alerta.style.display = "block";
-          alerta.textContent = retorno.Mensagem || "Erro no login";
-
-          if (sucesso) {
-            alerta.style.backgroundColor = "#d4edda"; // verde claro
-            alerta.style.color = "#155724"; // verde escuro
-            setTimeout(() => (window.location.href = "/"), 1500);
-          } else {
-            alerta.style.backgroundColor = "#f8d7da"; // vermelho claro
-            alerta.style.color = "#721c24"; // vermelho escuro
-            form.reset();
-          }
-        } catch (error) {
-          alerta.style.display = "block";
-          alerta.textContent = "Erro ao conectar com o servidor.";
-          alerta.style.backgroundColor = "#f8d7da";
-          alerta.style.color = "#721c24";
-        }
-      });
-    </script>
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
   </body>
 </html>

@@ -1540,3 +1540,66 @@ form button + button {
   box-shadow: var(--shadow-sm);
   padding: 18px 20px;
 }
+/* =========================
+   TABLE MOBILE FIX
+   ========================= */
+
+.table-section {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table-section table {
+  min-width: 600px;
+}
+/* =========================
+   TABLE MOBILE IMPROVEMENT
+   ========================= */
+
+@media (max-width: 768px) {
+  /* Reduz tamanho da tabela */
+  .table-section th,
+  .table-section td {
+    font-size: 13px;
+    padding: 6px 8px;
+  }
+
+  /* Botões dentro da tabela mais compactos */
+  table button {
+    font-size: 12px;
+    padding: 4px 8px;
+    min-width: auto;
+    margin: 2px 2px;
+  }
+
+  /* Evita botão grudado */
+  table td {
+    white-space: nowrap;
+  }
+}
+/* =========================
+   FIX TABLE ACTION BUTTONS
+   ========================= */
+
+.table-section td:last-child {
+  white-space: normal;
+}
+
+.table-section td:last-child button {
+  display: inline-flex;
+  margin: 3px;
+  vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+  .table-section td:last-child {
+    min-width: 120px;
+  }
+
+  .table-section td:last-child button {
+    font-size: 12px;
+    padding: 5px 8px;
+    min-width: 70px;
+    margin: 3px 0;
+  }
+}
