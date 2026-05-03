@@ -1603,3 +1603,17 @@ form button + button {
     margin: 3px 0;
   }
 }
+
+/* Destaques visuais */
+.entrada {
+  color: green;
+  font-weight: bold;
+}
+.saida {
+  color: red;
+  font-weight: bold;
+}
+.esgotado {
+  color: gray;
+  font-style: italic;
+}
