@@ -52,12 +52,21 @@
       </table>
     </section>
 
-    <!-- Gráfico -->
-    <div class="grafico">
+<section class="report-grid">
+  <!-- Gráfico -->
+  <div class="report-card">
+    <h2>Gráfico de Estoque</h2>
+    <div class="chart-container">
       <canvas id="graficoEstoque"></canvas>
     </div>
-    <!-- Resumo gerencial -->
-    <div id="resumo" style="margin-top: 20px; font-weight: bold"></div>
+  </div>
+
+  <!-- Resumo -->
+  <div class="report-card">
+    <h2>Resumo</h2>
+    <div id="resumo" class="report-summary"></div>
+  </div>
+</section>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     <script src="{{ url_for('static', filename='js/relatorio_estoque.js') }}"></script>
