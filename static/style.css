@@ -1781,3 +1781,52 @@ form button + button {
   color: var(--color-danger);
   border: 1px solid #fecaca;
 }
+
+/* =========================
+   MOBILE REPORT SUMMARY FIX
+   ========================= */
+
+@media (max-width: 768px) {
+  .report-grid {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .report-card {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .report-card:has(.report-summary) {
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  .report-summary {
+    width: 100%;
+  }
+
+  .summary-item {
+    width: 100%;
+  }
+
+  .chart-container {
+    overflow-x: auto;
+  }
+
+  .chart-container canvas {
+    min-width: 520px;
+  }
+  .export-section {
+    gap: 10px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .export-section button {
+    gap: 10px;
+    width: 100%;
+    min-height: 44px;
+    border-radius: 10px;
+  }
+}
