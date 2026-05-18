@@ -59,12 +59,23 @@
     </section>
 
     <!-- Gráfico -->
-    <div class="grafico">
-      <canvas id="graficoValidade"></canvas>
-    </div>
+    <section class="report-grid">
+      <div class="report-card">
+        <h2>Gráfico de Validade</h2>
 
-    <!-- Resumo gerencial -->
-    <div id="resumoValidade"></div>
+        <div class="chart-container">
+          <canvas id="graficoValidade"></canvas>
+        </div>
+      </div>
+
+      <div class="report-card">
+        <h2>Resumo</h2>
+
+        <div id="resumoValidade" class="report-summary"></div>
+      </div>
+    </section>
+
+
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>

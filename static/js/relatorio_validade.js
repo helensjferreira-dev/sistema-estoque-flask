@@ -25,7 +25,12 @@ async function carregarRelatorioValidade() {
           <td>${l.quantidade}</td>
           <td>${l.validade}</td>
           <td>${l.dias_restantes}</td>
-          <td class="${statusClass}">${l.status}</td>
+          <td>
+  <span class="status-badge ${statusClass}">
+    ${statusClass === "ok" ? "✅" : statusClass === "proximo" ? "⚠️" : "🚫"}
+    ${l.status}
+  </span>
+</td>
         </tr>
       `;
     nomes.push(l.produto_nome + " (Lote " + l.numero + ")");
@@ -47,12 +52,27 @@ async function carregarRelatorioValidade() {
   } else if (proximos > 0) {
     resumoClasse = "resumo-laranja";
   }
-  resumoDiv.className = resumoClasse;
+  const seguros = totalLotes - vencidos - proximos;
+
+  resumoDiv.className = "report-summary";
   resumoDiv.innerHTML = `
-          Total de lotes: ${totalLotes} <br>
-          Vencidos: ${vencidos} <br>
-          Próximos do vencimento (≤30 dias): ${proximos}
-        `;
+  <div class="summary-item">
+    <span>Total de lotes</span>
+    <strong>${totalLotes}</strong>
+  </div>
+  <div class="summary-item danger">
+    <span>Vencidos</span>
+    <strong>${vencidos}</strong>
+  </div>
+  <div class="summary-item warning">
+    <span>Próximos do vencimento</span>
+    <strong>${proximos}</strong>
+  </div>
+  <div class="summary-item success">
+    <span>Seguros</span>
+    <strong>${seguros}</strong>
+  </div>
+`;
 
   // Gráfico
   const ctx = document.getElementById("graficoValidade").getContext("2d");
@@ -67,16 +87,68 @@ async function carregarRelatorioValidade() {
           backgroundColor: diasRestantes.map((d) =>
             d <= 0 ? "red" : d <= 30 ? "orange" : "green",
           ),
+          barThickness: 32,
         },
       ],
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
+
       plugins: {
-        legend: { position: "top" },
+        legend: {
+          position: "top",
+          labels: {
+            color: "#334155",
+            font: {
+              size: 13,
+              weight: "600",
+              family: "Inter, sans-serif",
+            },
+            padding: 16,
+            boxWidth: 18,
+          },
+        },
+
         title: {
           display: true,
           text: "Dias restantes para validade dos lotes",
+          color: "#0f172a",
+          font: {
+            size: 18,
+            weight: "700",
+            family: "Inter, sans-serif",
+          },
+          padding: {
+            bottom: 24,
+          },
+        },
+      },
+
+      scales: {
+        x: {
+          ticks: {
+            color: "#475569",
+            font: {
+              size: 12,
+              weight: "500",
+            },
+          },
+          grid: {
+            color: "#e2e8f0",
+          },
+        },
+
+        y: {
+          ticks: {
+            color: "#475569",
+            font: {
+              size: 12,
+            },
+          },
+          grid: {
+            color: "#e2e8f0",
+          },
         },
       },
     },
