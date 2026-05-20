@@ -88,6 +88,72 @@ def estilo_tabela_pdf():
         ("BOTTOMPADDING", (0, 0), (-1, 0), 10),
         ("TOPPADDING", (0, 0), (-1, 0), 10),
     ])
+def criar_formatos_xlsx(workbook):
+    return {
+        "title": workbook.add_format({
+            "bold": True,
+            "font_size": 16,
+            "font_color": "#111827",
+        }),
+        "header": workbook.add_format({
+            "bold": True,
+            "bg_color": "#111827",
+            "font_color": "white",
+            "align": "center",
+            "valign": "vcenter",
+            "border": 1,
+        }),
+        "normal": workbook.add_format({
+            "align": "center",
+            "valign": "vcenter",
+            "border": 1,
+            "border_color": "#d9e2ec",
+        }),
+        "success": workbook.add_format({
+            "align": "center",
+            "valign": "vcenter",
+            "font_color": "#166534",
+            "bg_color": "#dcfce7",
+            "border": 1,
+            "border_color": "#d9e2ec",
+        }),
+        "warning": workbook.add_format({
+            "align": "center",
+            "valign": "vcenter",
+            "font_color": "#92400e",
+            "bg_color": "#fef3c7",
+            "border": 1,
+            "border_color": "#d9e2ec",
+        }),
+        "danger": workbook.add_format({
+            "align": "center",
+            "valign": "vcenter",
+            "font_color": "#991b1b",
+            "bg_color": "#fee2e2",
+            "border": 1,
+            "border_color": "#d9e2ec",
+        }),
+        "summary_label": workbook.add_format({
+            "bold": True,
+            "font_color": "#334155",
+            "bg_color": "#f8fafc",
+            "border": 1,
+            "border_color": "#d9e2ec",
+            "align": "center",
+        }),
+        "summary_value": workbook.add_format({
+            "font_color": "#111827",
+            "bg_color": "#ffffff",
+            "border": 1,
+            "border_color": "#d9e2ec",
+            "align": "center",
+        }),
+    }
+
+
+def ajustar_largura_colunas(worksheet, larguras):
+    for coluna, largura in enumerate(larguras):
+        worksheet.set_column(coluna, coluna, largura)
 
 relatorio_routes = Blueprint('relatorio_routes', __name__)
 
@@ -759,10 +825,14 @@ def export_estoque_xlsx():
     worksheet = workbook.add_worksheet("Estoque")
 
     # Formatos
-    header_format = workbook.add_format({'bold': True, 'bg_color': '#1a2a4f', 'color': 'white', 'align': 'center'})
-    alerta_format = workbook.add_format({'bg_color': '#f8d7da', 'color': '#721c24'})
-    ok_format = workbook.add_format({'bg_color': '#d4edda', 'color': '#155724'})
-    normal_format = workbook.add_format({'align': 'center'})
+    # Formatos
+    formatos = criar_formatos_xlsx(workbook)
+
+    header_format = formatos["header"]
+    normal_format = formatos["normal"]
+    alerta_format = formatos["danger"]
+    baixo_format = formatos["warning"]
+    ok_format = formatos["success"]
 
     # Cabeçalho
     headers = ["ID", "Produto", "Categoria", "Estoque Mínimo", "Estoque Atual", "Status"]
@@ -773,21 +843,20 @@ def export_estoque_xlsx():
     for row, item in enumerate(dados, start=1):
         if item["estoque_atual"] == 0:
             status = "Em falta"
-            worksheet.write(row, 4, item["estoque_atual"], alerta_format)
-            worksheet.write(row, 5, status, alerta_format)
-        elif item["estoque_atual"] < item["estoque_minimo"]:
+            status_format = alerta_format
+        elif item["estoque_minimo"] > 0 and item["estoque_atual"] < item["estoque_minimo"]:
             status = "Baixo"
-            worksheet.write(row, 4, item["estoque_atual"], alerta_format)
-            worksheet.write(row, 5, status, alerta_format)
+            status_format = baixo_format
         else:
             status = "OK"
-            worksheet.write(row, 4, item["estoque_atual"], ok_format)
-            worksheet.write(row, 5, status, ok_format)
+            status_format = ok_format
 
         worksheet.write(row, 0, item["produto_id"], normal_format)
         worksheet.write(row, 1, item["produto_nome"], normal_format)
         worksheet.write(row, 2, item["categoria_nome"], normal_format)
         worksheet.write(row, 3, item["estoque_minimo"], normal_format)
+        worksheet.write(row, 4, item["estoque_atual"], status_format)
+        worksheet.write(row, 5, status, status_format)
 
     # Resumo
     total_produtos = len(dados)
@@ -795,10 +864,28 @@ def export_estoque_xlsx():
     baixos = sum(1 for item in dados if item["estoque_atual"] > 0 and item["estoque_atual"] < item["estoque_minimo"])
     ok = total_produtos - em_falta - baixos
 
-    worksheet.write(len(dados)+2, 0, f"Total de produtos: {total_produtos}")
-    worksheet.write(len(dados)+3, 0, f"Em falta: {em_falta}")
-    worksheet.write(len(dados)+4, 0, f"Baixo: {baixos}")
-    worksheet.write(len(dados)+5, 0, f"OK: {ok}")
+    base = len(dados) + 3
+
+    resumos = [
+        ("Total de produtos", total_produtos),
+        ("Em falta", em_falta),
+        ("Baixo", baixos),
+        ("OK", ok),
+    ]
+
+    for col, (label, valor) in enumerate(resumos):
+        worksheet.write(base, col, label, formatos["summary_label"])
+        worksheet.write(base + 1, col, valor, formatos["summary_value"])
+
+
+        ajustar_largura_colunas(
+        worksheet,
+        [18, 28, 22, 18, 18, 16]
+        
+    )
+    worksheet.set_row(0, 24)
+    worksheet.set_row(base, 24)
+    worksheet.set_row(base + 1, 22)
 
     workbook.close()
     output.seek(0)
