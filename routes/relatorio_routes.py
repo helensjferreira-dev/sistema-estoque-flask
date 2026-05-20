@@ -1041,14 +1041,11 @@ def export_movimentacoes_pdf():
     elementos = []
 
     # Título
-    titulo = Paragraph("Relatório de Movimentações", styles['Title'])
-    elementos.append(titulo)
-
-    # Info
-    usuario = session.get("usuario", "Usuário não identificado")
-    info = Paragraph(f"Gerado em {datetime.now().strftime('%d/%m/%Y %H:%M')} por {usuario}", styles['Normal'])
-    elementos.append(info)
-    elementos.append(Spacer(1, 20))
+    adicionar_cabecalho_pdf(
+    elementos,
+    "Relatório de Movimentações",
+    styles
+)
 
     # Cabeçalho da tabela
     tabela_dados = [["ID", "Data", "Produto", "Categoria", "Tipo", "Quantidade",
@@ -1088,25 +1085,32 @@ def export_movimentacoes_pdf():
             valor_total += valor * qtd
 
     tabela = Table(tabela_dados, repeatRows=1)
-    estilo = TableStyle([
-        ('GRID', (0,0), (-1,-1), 1, colors.black),
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1a2a4f")),
-        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
-        ('ALIGN', (0,0), (-1,-1), 'CENTER')
-    ])
+    estilo = estilo_tabela_pdf()
+    for i, row in enumerate(tabela_dados[1:], start=1):
+        tipo = row[4]
+
+        if str(tipo).lower() == "entrada":
+            estilo.add("TEXTCOLOR", (4, i), (4, i), PDF_SUCCESS)
+        elif str(tipo).lower() == "saida":
+            estilo.add("TEXTCOLOR", (4, i), (4, i), PDF_DANGER)
     tabela.setStyle(estilo)
     elementos.append(tabela)
     elementos.append(Spacer(1, 20))
 
     # Resumo
-    resumo_texto = (
-        f"Entradas: {entradas:,}".replace(",", ".") + " | "
-        f"Saídas: {saidas:,}".replace(",", ".") + " | "
-        f"Saldo líquido: {(entradas - saidas):,}".replace(",", ".") + "<br/>"
-        f"Valor total movimentado: " + f"R$ {valor_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-    )
-    resumo = Paragraph(resumo_texto, styles['Normal'])
-    elementos.append(resumo)
+    adicionar_resumo_pdf(
+    elementos,
+    styles,
+    [
+        ("Entradas", f"{entradas:,}".replace(",", ".")),
+        ("Saídas", f"{saidas:,}".replace(",", ".")),
+        ("Saldo líquido", f"{(entradas - saidas):,}".replace(",", ".")),
+        (
+            "Valor movimentado",
+            f"R$ {valor_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+        ),
+    ],
+)
 
     doc.build(elementos)
     buffer.seek(0)
