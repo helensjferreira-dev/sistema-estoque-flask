@@ -310,8 +310,10 @@ def export_validade_pdf():
     cur.close()
 
     dados = []
+
     for row in rows:
         dias_restantes = (row[3] - datetime.now(tz_brasilia).date()).days
+
         if dias_restantes <= 0:
             status = "Vencido"
         elif dias_restantes <= 30:
@@ -335,69 +337,73 @@ def export_validade_pdf():
     styles = getSampleStyleSheet()
     elementos = []
 
-    titulo = Paragraph("Relatório de Validade", styles['Title'])
-    elementos.append(titulo)
+    adicionar_cabecalho_pdf(
+        elementos,
+        "Relatório de Validade",
+        styles
+    )
 
-    usuario = session.get("usuario", "Usuário não identificado")
-    right_style = styles['Normal']
-    right_style.alignment = TA_RIGHT
-    info = Paragraph(f"Gerado em {datetime.now(tz_brasilia).strftime('%d/%m/%Y %H:%M')} por {usuario}", right_style)
-    elementos.append(info)
-    elementos.append(Spacer(1, 20))
+    tabela_dados = [
+        ["ID", "Produto", "Categoria", "Lote", "Quantidade", "Validade", "Dias restantes", "Status"]
+    ]
 
-    tabela_dados = [["ID", "Produto", "Categoria", "Lote", "Quantidade", "Validade", "Dias restantes", "Status"]]
     for l in dados:
+        status = l["status"]
+
+        if status == "Vencido":
+            status_pdf = "● Vencido"
+        elif status == "Próximo":
+            status_pdf = "● Próximo"
+        else:
+            status_pdf = "● OK"
+
         tabela_dados.append([
-            l["id"], l["produto_nome"], l["categoria_nome"], l["numero"],
-            l["quantidade"], l["validade"], l["dias_restantes"], l["status"]
+            l["id"],
+            l["produto_nome"],
+            l["categoria_nome"],
+            l["numero"],
+            l["quantidade"],
+            l["validade"],
+            l["dias_restantes"],
+            status_pdf
         ])
 
     tabela = Table(tabela_dados, repeatRows=1)
-    estilo = TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1a2a4f")),
-        ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
-        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-        ('BOTTOMPADDING', (0,0), (-1,0), 12),
-        ('GRID', (0,0), (-1,-1), 1, colors.black),
-    ])
+    estilo = estilo_tabela_pdf()
 
-    # Aplicar cores linha a linha
-    for i, l in enumerate(dados, start=1):  # start=1 porque linha 0 é cabeçalho
+    for i, l in enumerate(dados, start=1):
         if l["status"] == "Vencido":
-            estilo.add('TEXTCOLOR', (6,i), (7,i), colors.red)
+            estilo.add("TEXTCOLOR", (6, i), (7, i), PDF_DANGER)
         elif l["status"] == "Próximo":
-            estilo.add('TEXTCOLOR', (6,i), (7,i), colors.orange)
+            estilo.add("TEXTCOLOR", (6, i), (7, i), PDF_WARNING)
         else:
-            estilo.add('TEXTCOLOR', (6,i), (7,i), colors.green)
+            estilo.add("TEXTCOLOR", (6, i), (7, i), PDF_SUCCESS)
 
     tabela.setStyle(estilo)
     elementos.append(tabela)
-    elementos.append(Spacer(1, 20))
 
-    # Resumo
     total_lotes = len(dados)
     vencidos = sum(1 for l in dados if l["status"] == "Vencido")
     proximos = sum(1 for l in dados if l["status"] == "Próximo")
 
-    resumo_texto = f"Total de lotes: {total_lotes} | Vencidos: {vencidos} | Próximos (≤30 dias): {proximos}"
-    resumo_style = styles['Normal']
-    if vencidos > 0:
-        resumo_style.textColor = colors.red
-    elif proximos > 0:
-        resumo_style.textColor = colors.orange
-    else:
-        resumo_style.textColor = colors.green
-
-    resumo = Paragraph(resumo_texto, resumo_style)
-    elementos.append(resumo)
+    adicionar_resumo_pdf(
+        elementos,
+        styles,
+        [
+            ("Total de lotes", total_lotes),
+            ("Vencidos", vencidos),
+            ("Próximos", proximos),
+        ],
+    )
 
     doc.build(elementos)
     buffer.seek(0)
-    return Response(buffer, mimetype='application/pdf',
-                    headers={"Content-Disposition": "attachment;filename=validade.pdf"})
 
-
+    return Response(
+        buffer,
+        mimetype="application/pdf",
+        headers={"Content-Disposition": "attachment;filename=validade.pdf"}
+    )
 
 @relatorio_routes.route('/relatorio/validade/export/xlsx')
 def export_validade_xlsx():
