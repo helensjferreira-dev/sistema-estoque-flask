@@ -10,7 +10,6 @@
       href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@700&family=Parisienne&family=Cinzel+Decorative:wght@700&display=swap"
       rel="stylesheet"
     />
-
   </head>
   <body>
     {% include 'menu_app.html' %}
@@ -73,7 +72,7 @@
     </section>
 
     <!-- Resumo -->
-    <div id="resumoPeriodo" style="margin-top: 20px; font-weight: bold"></div>
+    <div id="resumoPeriodo" class="movement-summary"></div>
 
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     <script src="{{ url_for('static', filename='js/relatorio_movimentacoes.js') }}"></script>

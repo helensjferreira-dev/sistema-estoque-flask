@@ -9,7 +9,7 @@ from reportlab.lib.pagesizes import letter, landscape
 from reportlab.pdfgen import canvas
 
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import getSampleStyleSheet,ParagraphStyle
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_RIGHT
 import io
@@ -24,6 +24,70 @@ from openpyxl import Workbook
 tz_brasilia = pytz.timezone("America/Sao_Paulo")
 
 locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
+
+PDF_PRIMARY = colors.HexColor("#111827")
+PDF_BORDER = colors.HexColor("#d9e2ec")
+PDF_BG_LIGHT = colors.HexColor("#f8fafc")
+PDF_DANGER = colors.HexColor("#991b1b")
+PDF_WARNING = colors.HexColor("#92400e")
+PDF_SUCCESS = colors.HexColor("#166534")
+
+
+def adicionar_cabecalho_pdf(elementos, titulo_texto, styles):
+    titulo_style = styles["Title"]
+    titulo_style.textColor = PDF_PRIMARY
+    titulo_style.fontSize = 20
+    titulo_style.leading = 24
+
+    normal_style = styles["Normal"]
+    normal_style.alignment = TA_RIGHT
+    normal_style.textColor = colors.HexColor("#334155")
+
+    usuario = session.get("usuario", "Usuário não identificado")
+    data_geracao = datetime.now(tz_brasilia).strftime("%d/%m/%Y %H:%M")
+
+    elementos.append(Paragraph(titulo_texto, titulo_style))
+    elementos.append(
+        Paragraph(f"Gerado em {data_geracao} por {usuario}", normal_style)
+    )
+    elementos.append(Spacer(1, 18))
+
+def adicionar_resumo_pdf(elementos, styles, itens):
+    resumo_style = ParagraphStyle(
+        "ResumoPDF",
+        parent=styles["Normal"],
+        fontSize=9,
+        leading=12,
+        alignment=TA_RIGHT,
+        textColor=colors.HexColor("#64748b"),
+    )
+
+    partes = []
+
+    for label, valor in itens:
+        partes.append(
+            f'<font color="#334155"><b>{label}:</b></font> {valor}'
+        )
+
+    resumo_texto = " &nbsp;&nbsp;|&nbsp;&nbsp; ".join(partes)
+
+    elementos.append(Spacer(1, 14))
+    elementos.append(Paragraph(resumo_texto, resumo_style))
+
+
+def estilo_tabela_pdf():
+    return TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), PDF_PRIMARY),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 8),
+        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("GRID", (0, 0), (-1, -1), 0.5, PDF_BORDER),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, PDF_BG_LIGHT]),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 10),
+        ("TOPPADDING", (0, 0), (-1, 0), 10),
+    ])
 
 relatorio_routes = Blueprint('relatorio_routes', __name__)
 
@@ -165,6 +229,7 @@ def estoque_dados():
         })
 
     return jsonify({"dados": dados})
+
 
 
 @relatorio_routes.route('/relatorio/validade/export/csv')
@@ -566,28 +631,19 @@ def export_estoque_pdf():
     elementos = []
 
     # Cabeçalho
-    titulo = Paragraph("Relatório de Estoque", styles['Title'])
-    elementos.append(titulo)
+    adicionar_cabecalho_pdf(elementos, "Relatório de Estoque", styles)
 
-    # Data/hora e usuário alinhado à direita
-    usuario = session.get("usuario", "Usuário não identificado")
-    right_style = styles['Normal']
-    right_style.alignment = TA_RIGHT
-    info_texto = f"Gerado em {datetime.now(tz_brasilia).strftime('%d/%m/%Y %H:%M')} por {usuario}"
-    info = Paragraph(info_texto, right_style)
-    elementos.append(info)
-
-    elementos.append(Spacer(1, 20))
 
     # Tabela
     tabela_dados = [["ID", "Produto", "Categoria", "Estoque Mínimo", "Estoque Atual", "Status"]]
     for item in dados:
         if item["estoque_atual"] == 0:
-            status = "Em falta"
-        elif item["estoque_atual"] < item["estoque_minimo"]:
-            status = "Baixo"
+            status =  "● Em falta"
+        elif (item["estoque_minimo"] > 0 and item["estoque_atual"] < item["estoque_minimo"]):
+            status =  "● Baixo"
         else:
-            status = "OK"
+            status = "● OK"
+
         tabela_dados.append([
             item["produto_id"],
             item["produto_nome"],
@@ -598,20 +654,21 @@ def export_estoque_pdf():
         ])
 
     tabela = Table(tabela_dados, repeatRows=1)
-    estilo = TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1a2a4f")),
-        ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
-        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-        ('BOTTOMPADDING', (0,0), (-1,0), 12),
-        ('GRID', (0,0), (-1,-1), 1, colors.black),
-    ])
+    estilo = estilo_tabela_pdf()
 
     # Destaque em vermelho para estoque baixo
     for i, item in enumerate(dados, start=1):
-        if item["estoque_atual"] < item["estoque_minimo"]:
-            estilo.add('TEXTCOLOR', (4,i), (4,i), colors.red)
-            estilo.add('TEXTCOLOR', (5,i), (5,i), colors.red)
+        if item["estoque_atual"] == 0:
+            estilo.add("TEXTCOLOR", (4, i), (5, i), PDF_DANGER)
+
+        elif (
+            item["estoque_minimo"] > 0
+            and item["estoque_atual"] < item["estoque_minimo"]
+        ):
+            estilo.add("TEXTCOLOR", (4, i), (5, i), PDF_WARNING)
+
+        else:
+            estilo.add("TEXTCOLOR", (4, i), (5, i), PDF_SUCCESS)
 
     tabela.setStyle(estilo)
     elementos.append(tabela)
@@ -627,23 +684,16 @@ def export_estoque_pdf():
     perc_falta = (em_falta / total_produtos * 100) if total_produtos > 0 else 0
     perc_baixo = (baixos / total_produtos * 100) if total_produtos > 0 else 0
 
-    resumo_texto = (
-        f"Total de produtos: {total_produtos} | "
-        f"Em falta: {em_falta} ({perc_falta:.1f}%) | "
-        f"Baixo: {baixos} ({perc_baixo:.1f}%) | "
-        f"OK: {ok}"
-    )
-
-    resumo_style = styles['Normal']
-    if perc_falta >= 20:
-        resumo_style.textColor = colors.red
-    elif perc_baixo >= 20:
-        resumo_style.textColor = colors.orange
-    else:
-        resumo_style.textColor = colors.green
-
-    resumo = Paragraph(resumo_texto, resumo_style)
-    elementos.append(resumo)
+    adicionar_resumo_pdf(
+    elementos,
+    styles,
+    [
+        ("Total de produtos", total_produtos),
+        ("Em falta", f"{em_falta} ({perc_falta:.1f}%)"),
+        ("Baixo", f"{baixos} ({perc_baixo:.1f}%)"),
+        ("OK", ok),
+    ],
+)
 
     doc.build(elementos)
     buffer.seek(0)
