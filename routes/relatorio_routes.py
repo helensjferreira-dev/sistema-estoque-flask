@@ -516,12 +516,21 @@ def export_validade_xlsx():
     worksheet = workbook.add_worksheet("Validade")
 
     # Formatos
-    header_format = workbook.add_format({'bold': True, 'bg_color': '#1a2a4f', 'color': 'white', 'align': 'center'})
-    alerta_format = workbook.add_format({'bg_color': '#f8d7da', 'color': '#721c24', 'align': 'center'})
-    proximos_format = workbook.add_format({'bg_color': '#fff3cd', 'color': '#856404', 'align': 'center'})
-    ok_format = workbook.add_format({'color': 'green', 'align': 'center'})
-    normal_format = workbook.add_format({'align': 'center'})
-    date_format = workbook.add_format({'num_format': 'dd/mm/yyyy', 'align': 'center'})
+    formatos = criar_formatos_xlsx(workbook)
+
+    header_format = formatos["header"]
+    normal_format = formatos["normal"]
+    alerta_format = formatos["danger"]
+    proximos_format = formatos["warning"]
+    ok_format = formatos["success"]
+
+    date_format = workbook.add_format({
+        "num_format": "dd/mm/yyyy",
+        "align": "center",
+        "valign": "vcenter",
+        "border": 1,
+        "border_color": "#d9e2ec",
+    })
 
     # Cabeçalho
     headers = ["ID", "Produto", "Categoria", "Lote", "Quantidade", "Validade", "Dias restantes", "Status"]
@@ -539,25 +548,41 @@ def export_validade_xlsx():
 
         # Dias restantes + status com cores
         if l["status"] == "Vencido":
-            worksheet.write(row, 6, l["dias_restantes"], alerta_format)
-            worksheet.write(row, 7, l["status"], alerta_format)
+            status_format = alerta_format
         elif l["status"] == "Próximo":
-            worksheet.write(row, 6, l["dias_restantes"], proximos_format)
-            worksheet.write(row, 7, l["status"], proximos_format)
+            status_format = proximos_format
         else:
-            worksheet.write(row, 6, l["dias_restantes"], ok_format)
-            worksheet.write(row, 7, l["status"], ok_format)
+            status_format = ok_format
+        worksheet.write(row, 6, l["dias_restantes"], status_format)
+        worksheet.write(row, 7, l["status"], status_format)
 
     # Resumo gerencial
     total_lotes = len(dados)
     vencidos = sum(1 for l in dados if l["status"] == "Vencido")
     proximos = sum(1 for l in dados if l["status"] == "Próximo")
 
-    resumo_row = len(dados) + 2
-    worksheet.write(resumo_row, 0, f"Total de lotes: {total_lotes}")
-    worksheet.write(resumo_row + 1, 0, f"Vencidos: {vencidos}")
-    worksheet.write(resumo_row + 2, 0, f"Próximos do vencimento (≤30 dias): {proximos}")
+    base = len(dados) + 3
+    resumos = [
+    ("Total de lotes", total_lotes),
+    ("Vencidos", vencidos),
+    ("Próximos", proximos),
+]
 
+    for col, (label, valor) in enumerate(resumos):
+        worksheet.write(base, col, label, formatos["summary_label"])
+        worksheet.write(base + 1, col, valor, formatos["summary_value"])
+
+
+
+    
+    ajustar_largura_colunas(
+    worksheet,
+    [8, 32, 30, 12, 14, 16, 16, 16]
+)
+
+    worksheet.set_row(0, 24)
+    worksheet.set_row(base, 24)
+    worksheet.set_row(base + 1, 22)
     workbook.close()
     output.seek(0)
 
