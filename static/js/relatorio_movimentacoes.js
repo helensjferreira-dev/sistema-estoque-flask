@@ -12,10 +12,15 @@ function formatarMoeda(valor) {
 
 function formatarData(dataStr) {
   if (!dataStr) return "-";
-  const d = new Date(dataStr);
-  return isNaN(d.getTime())
-    ? dataStr
-    : d.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+
+  const [data, hora] = dataStr.split("T");
+  const [ano, mes, dia] = data.split("-");
+
+  if (!hora) return `${dia}/${mes}/${ano}`;
+
+  const horaFormatada = hora.slice(0, 5);
+
+  return `${dia}/${mes}/${ano} ${horaFormatada}`;
 }
 
 function exportar(tipo) {

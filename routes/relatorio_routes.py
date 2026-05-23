@@ -88,6 +88,32 @@ def estilo_tabela_pdf():
         ("BOTTOMPADDING", (0, 0), (-1, 0), 10),
         ("TOPPADDING", (0, 0), (-1, 0), 10),
     ])
+
+def formatar_data_relatorio(data):
+    if not data:
+        return "-"
+
+    if isinstance(data, datetime):
+        return data.strftime("%d/%m/%Y")
+
+    if isinstance(data, date):
+        return data.strftime("%d/%m/%Y")
+
+    return str(data)
+
+
+def formatar_data_hora_relatorio(data):
+    if not data:
+        return "-"
+
+    if isinstance(data, datetime):
+        return data.strftime("%d/%m/%Y %H:%M")
+
+    if isinstance(data, date):
+        return data.strftime("%d/%m/%Y")
+
+    return str(data)
+
 def criar_formatos_xlsx(workbook):
     return {
         "title": workbook.add_format({
@@ -198,7 +224,7 @@ def validade_dados():
             "id": idlote,
             "numero": numero,
             "quantidade": quantidade,
-            "validade": data_validade.strftime("%d/%m/%Y"),
+            "validade": formatar_data_relatorio(data_validade),
             "produto_nome": produto_nome,
             "categoria_nome": categoria_nome or "-",
             "dias_restantes": dias_restantes,
@@ -544,7 +570,10 @@ def export_validade_xlsx():
         worksheet.write(row, 2, l["categoria_nome"], normal_format)
         worksheet.write(row, 3, l["numero"], normal_format)
         worksheet.write(row, 4, l["quantidade"], normal_format)
-        worksheet.write_datetime(row, 5, l["validade"], date_format)
+        worksheet.write(row,
+    5,
+    formatar_data_relatorio(l["validade"]),
+    normal_format)
 
         # Dias restantes + status com cores
         if l["status"] == "Vencido":
@@ -987,14 +1016,9 @@ def relatorio_movimentacoes():
         estoque_lote = int(estoque_lote) if estoque_lote is not None else 0
 
         # Ajuste de timezone (se for datetime)
-        if isinstance(data_mov, datetime):
-            if data_mov.tzinfo is None:  
-                data_mov = data_mov.replace(tzinfo=pytz.UTC)
-            data_brasilia = data_mov.astimezone(tz_brasilia)
-            data_fmt = data_brasilia.isoformat()
-        else:
-            
-            data_fmt = data_mov.isoformat()
+
+        data_fmt = data_mov.isoformat()
+
 
         dados.append({
             "idmovimentacao": idmov,
@@ -1177,7 +1201,7 @@ def export_movimentacoes_pdf():
 
         tabela_dados.append([
             idmov,
-            data.strftime("%d/%m/%Y %H:%M"),
+            formatar_data_hora_relatorio(data),
             produto,
             categoria,
             tipo,
@@ -1270,10 +1294,21 @@ def export_movimentacoes_xlsx():
     worksheet = workbook.add_worksheet("Movimentações")
 
     # Formatos
-    header_format = workbook.add_format({'bold': True, 'bg_color': '#1a2a4f', 'color': 'white', 'align': 'center'})
-    normal_format = workbook.add_format({'align': 'center'})
-    entrada_format = workbook.add_format({'align': 'center', 'color': 'green'})
-    saida_format = workbook.add_format({'align': 'center', 'color': 'red'})
+    formatos = criar_formatos_xlsx(workbook)
+
+    header_format = formatos["header"]
+    normal_format = formatos["normal"]
+
+    entrada_format = formatos["success"]
+    saida_format = formatos["danger"]
+
+    currency_format = workbook.add_format({
+        "num_format": 'R$ #,##0.00',
+        "align": "center",
+        "valign": "vcenter",
+        "border": 1,
+        "border_color": "#d9e2ec",
+    })
 
     # Cabeçalho 
     headers = ["ID", "Data", "Produto", "Categoria", "Tipo", "Quantidade",
@@ -1287,51 +1322,63 @@ def export_movimentacoes_xlsx():
     for row_idx, item in enumerate(rows, start=1):
         idmov, data, tipo, qtd, valor, motivo, produto, categoria, usuario, idlote, estoque_lote = item
 
-        # Normalização
         qtd = int(qtd) if qtd is not None else 0
         valor = float(valor) if valor is not None else 0.0
         estoque_lote = int(estoque_lote) if estoque_lote is not None else 0
 
-        qtd_fmt = f"{qtd:,}".replace(",", ".")
-        valor_fmt = f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") if valor else "-"
+        data_fmt = formatar_data_hora_relatorio(data)
 
-        # Data como string 
-        try:
-            data_fmt = data.strftime("%d/%m/%Y %H:%M")
-        except Exception:
-            data_fmt = str(data)
-
-        # Formato de tipo
         tipo_format = entrada_format if tipo.lower() == "entrada" else saida_format
 
-        # Escreve linha
         worksheet.write(row_idx, 0, idmov, normal_format)
         worksheet.write(row_idx, 1, data_fmt, normal_format)
         worksheet.write(row_idx, 2, produto, normal_format)
         worksheet.write(row_idx, 3, categoria, normal_format)
         worksheet.write(row_idx, 4, tipo, tipo_format)
-        worksheet.write(row_idx, 5, qtd_fmt, normal_format)
-        worksheet.write(row_idx, 6, valor_fmt, normal_format)
+        worksheet.write(row_idx, 5, qtd, normal_format)
+
+        worksheet.write_number(
+            row_idx,
+            6,
+            valor,
+            currency_format
+        )
+
         worksheet.write(row_idx, 7, motivo or "-", normal_format)
         worksheet.write(row_idx, 8, usuario, normal_format)
         worksheet.write(row_idx, 9, idlote, normal_format)
         worksheet.write(row_idx, 10, estoque_lote, normal_format)
 
-        # Resumo
         if tipo.lower() == "entrada":
             entradas += qtd
         elif tipo.lower() == "saida":
             saidas += qtd
+
         if valor:
             valor_total += valor * qtd
 
     # Resumo
-    base = len(rows) + 2
-    worksheet.write(base + 0, 0, f"Entradas: {entradas:,}".replace(",", "."))
-    worksheet.write(base + 1, 0, f"Saídas: {saidas:,}".replace(",", "."))
-    worksheet.write(base + 2, 0, f"Saldo líquido: {(entradas - saidas):,}".replace(",", "."))
-    worksheet.write(base + 3, 0, "Valor total movimentado: " +
-                    f"R$ {valor_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+    base = len(rows) + 3
+
+    resumos = [
+        ("Entradas", entradas),
+        ("Saídas", saidas),
+        ("Saldo líquido", entradas - saidas),
+        ("Valor movimentado", f"R$ {valor_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")),
+    ]
+
+    for col, (label, valor) in enumerate(resumos):
+        worksheet.write(base, col, label, formatos["summary_label"])
+        worksheet.write(base + 1, col, valor, formatos["summary_value"])
+
+    ajustar_largura_colunas(
+    worksheet,
+    [12, 16, 28, 22, 12, 12, 18, 28, 22, 12, 16]
+)
+
+    worksheet.set_row(0, 24)
+    worksheet.set_row(base, 24)
+    worksheet.set_row(base + 1, 22)
 
     workbook.close()
     output.seek(0)
