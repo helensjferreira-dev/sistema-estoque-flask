@@ -129,13 +129,15 @@ async function carregarRelatorioValidade() {
         x: {
           ticks: {
             color: "#475569",
+            maxRotation: 45,
+            minRotation: 45,
             font: {
               size: 12,
               weight: "500",
             },
           },
           grid: {
-            color: "#e2e8f0",
+            display: false,
           },
         },
 
@@ -147,7 +149,7 @@ async function carregarRelatorioValidade() {
             },
           },
           grid: {
-            color: "#e2e8f0",
+            color: "rgba(0,0,0,0.05)",
           },
         },
       },

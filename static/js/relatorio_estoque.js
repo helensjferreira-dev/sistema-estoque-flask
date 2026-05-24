@@ -100,13 +100,13 @@ async function carregarRelatorio() {
           label: "Estoque Atual",
           data: estoqueAtual,
           backgroundColor: "#4caf50",
-          barThickness: 32,
+          barThickness: 40,
         },
         {
           label: "Estoque Mínimo",
           data: estoqueMinimo,
           backgroundColor: "#f44336",
-          barThickness: 32,
+          barThickness: 40,
         },
       ],
     },
@@ -147,26 +147,29 @@ async function carregarRelatorio() {
       scales: {
         x: {
           ticks: {
-            color: "#475569",
+            color: "#334155",
+            maxRotation: 45,
+            minRotation: 45,
             font: {
               size: 12,
               weight: "500",
             },
           },
           grid: {
-            color: "#e2e8f0",
+            display: false,
           },
         },
 
         y: {
+          beginAtZero: true,
           ticks: {
-            color: "#475569",
+            color: "#334155",
             font: {
               size: 12,
             },
           },
           grid: {
-            color: "#e2e8f0",
+            color: "rgba(0,0,0,0.05)",
           },
         },
       },
